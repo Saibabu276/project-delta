@@ -1,0 +1,127 @@
+<div data-ng-controller="scriptGenerationController">
+<div class="jumbotron">
+	<h4>Instructions to use</h4>
+	<ul>
+		<li>First of all make sure the Excel file you are uploading is in *.xls(Excel 97 - 2003) and does not contain more than one sheet</li>
+		<li>Make sure the first row should be with column names without any trailing or leading spaces, and cannot be empty</li>
+		<li>You select script type(insert/update), either of them you should enter number of columns</li>
+		<li>Above step will generate dropdown for each column, from which you choose the column name from Excel.</li>
+		<li>If you are generating insert scripts, it is highly recommended that you check the Generate Rerunnable scripts which will ask for number of unique column, and this generates dropdowns to select the unique columns</li>
+		<li>If you select Update in script type, you should enter the number of Predicate Columns(Where conditions), it will generate dropdowns of columns as same as above</li>
+		<li>Now you hit Generate Scripts tab and there you will have your scripts.</li>
+		<li>We are not supporting IE.</li>
+	</ul>
+</div>
+
+<div class="jumbotron">
+	  
+	<label for="my_file_input">Choose Your XlSX File</label>
+	<input type="file" id="my_file_input" />
+	<br/><br/>
+	<select data-ng-model="scriptType">
+		<option value="">Select your script type</option>
+		<option value="insert">Insert</option>
+		<option value="update">Update</option>
+	</select>
+
+	<input type="text" placeholder="table name" data-ng-model="tableName" data-ng-hide="isEmpty(scriptType)">
+
+	<input type="text" placeholder="number of field to update" data-ng-model="updateFieldsNo" data-ng-show="scriptType === 'update'"
+			data-ng-change="updateFields()">
+			
+	<input type="text" placeholder="number of field to insert" data-ng-model="insertColumnNo" data-ng-show="scriptType === 'insert'"
+			data-ng-change="addInsertColumns()">
+
+	<input type="text" placeholder="number of predicates to update" data-ng-model="updatePredicatesNo" data-ng-show="scriptType === 'update'"
+			data-ng-change="updatePredicates()">
+
+	<span data-ng-show="scriptType === 'insert'">
+		<input type="checkbox" data-ng-model="isRerunnable" title="This means we will generate delete scripts along with insert scripts, so incase of one insert script failed we can rerun all the scripts again."/>
+		Generate Rerunnable scripts(Recommended when generating insert scripts)
+		
+		<input type="text" data-ng-model="rerunnableFields" title="number fields form unique combination" placeholder="number fields form unique combination"
+		data-ng-change="addRerunnableScripts()">
+	</span>
+	<br/>
+	<br/>
+	<fieldset class="inline" data-ng-show="insertColumnNo > 0 && scriptType === 'insert'">
+		<legend>
+			Column Values to be inserted
+		</legend>
+		<button data-ng-click="selectAllColumns()">Select All Columns</button>
+		<div class="m10" data-ng-repeat="field in insertColumns">
+			<li class="no-style-list">
+				<select data-ng-model="field.fieldName" data-ng-change="field.fieldValue = field.fieldName">
+					<option value="">Select a filed</option>
+					<option data-ng-repeat="col in columns" value="{{col}}"
+							data-ng-class="{'field-selected': isColumnSelected(col, 'insertColumns')}">{{col}}</option>
+				</select>
+				<select data-ng-model="field.fieldValue" class="ng-hide">
+					<option value="">Select a field to take value from</option>
+					<option data-ng-repeat="col in columns" value="{{col}}">{{col}}</option>
+				</select>
+			</li>
+		</div>
+	</fieldset>
+
+	<fieldset class="inline" data-ng-show="updateFieldsNo > 0 && scriptType === 'update'">
+		<legend>
+			Column Values to be updated
+		</legend>
+		<div class="m10" data-ng-repeat="field in updateValueArray">
+			<li class="no-style-list">
+				<select data-ng-model="field.fieldName" data-ng-change="field.fieldValue = field.fieldName">
+					<option value="">Select a filed</option>
+					<option data-ng-repeat="col in columns" value="{{col}}"
+							data-ng-class="{'field-selected': isColumnSelected(col, 'updateValueArray')}">{{col}}</option>
+				</select>
+				<select data-ng-model="field.fieldValue" class="ng-hide">
+					<option value="">Select a field to take value from</option>
+					<option data-ng-repeat="col in columns" value="{{col}}">{{col}}</option>
+				</select>
+			</li>
+
+		</div>
+	</fieldset>
+	<fieldset class="inline" data-ng-show="updatePredicatesNo > 0">
+		<legend>
+			Predicates for update
+		</legend>
+		<div class="m10" data-ng-repeat="field in updatePredicatesArray">
+			<select data-ng-model="field.fieldName">
+				<option value="">Select a filed</option>
+				<option data-ng-repeat="col in columns" value="{{col}}"
+						data-ng-class="{'field-selected': isColumnSelected(col, 'updatePredicatesNo')}">{{col}}</option>
+			</select>
+		</div>
+	</fieldset>
+
+	<fieldset class="inline" data-ng-show="isRerunnable && scriptType === 'insert' && rerunnableFields > 0">
+		<legend>
+			Predicates for update
+		</legend>
+		<div class="m10" data-ng-repeat="field in reRunnableScriptsArray">
+			<select data-ng-model="field.fieldName">
+				<option value="">Select a filed</option>
+				<option data-ng-repeat="col in columns" value="{{col}}"
+						data-ng-class="{'field-selected': isColumnSelected(col, 'reRunnableScriptsArray')}">{{col}}</option>
+			</select>
+		</div>
+	</fieldset>
+
+	<button data-ng-click="generateQueries()">
+		Generate Query
+	</button>
+	<button data-ng-click="copyQueries()">
+		Copy Queries
+	</button>
+	<br>
+	<textarea id='queries' data-ng-show="totalQueries !== ''"
+			  data-ng-model="totalQueries"
+			  style="width:90%;height:700px;"
+			  readonly="readonly"></textarea>
+</div>
+<footer style="position:fixed;bottom:0px;right:0px;">
+<a href="mailto:saibabu.boddeda@adp.com?subject=Ex-Reade'&body=Hi Sai," style="text-decoration:none;">&copy; Saibabu Boddeda</a>
+</footer>
+</div>
